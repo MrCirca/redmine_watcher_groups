@@ -9,11 +9,22 @@ class WatcherGroupsController < ApplicationController
 
   def create
     if params[:watcher_group].is_a?(Hash) && request.post?
-      group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
-      group_ids.each do |group_id|
-        if Watcher.where("watchable_type='#{@watched.class}' and watchable_id = #{@watched.id} and user_id = '#{group_id}'").limit(1).blank?
-          # insert directly into table to avoit user type checking
-          Watcher.connection.execute("INSERT INTO `#{Watcher.table_name}` (`user_id`, `watchable_id`, `watchable_type`) VALUES (#{group_id}, #{@watched.id}, '#{@watched.class.name}')")
+      if params[:object_type] == 'issue'
+        issue = Issue.find(params[:object_id])
+        group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
+
+        find_watcher_users = []
+        group_ids.each do |group_id|
+          group = Group.find(group_id)
+          @watched.set_watcher_group(group, true)
+          find_watcher_users = find_watcher_users | group.users
+        end
+        if find_watcher_users.any? and Redmine::Plugin.installed? :redmine_advanced_issue_history
+          notes = []
+          find_watcher_users.each do |user|
+            notes.append("Watcher #{user.name} was added")
+          end
+          add_system_journal(notes, issue)
         end
       end
     end
@@ -31,7 +42,23 @@ class WatcherGroupsController < ApplicationController
   end
 
   def destroy
-    @watched.set_watcher_group(Group.find(params[:group_id]), false) if request.post?
+    if request.post?
+      if params[:object_type] == 'issue'
+        group = Group.find(params[:group_id])
+        @watched.set_watcher_group(group, false) 
+        issue = Issue.find(params[:object_id])
+        group_users = group.users
+        if group_users.any?
+          if Redmine::Plugin.installed? :redmine_advanced_issue_history
+            notes = []
+            group_users.each do |user|
+              notes.append("Watcher #{user.name} was removed")
+            end
+            add_system_journal(notes, issue)
+          end
+        end
+      end
+    end
     respond_to do |format|
       format.html { redirect_to :back }
       format.js
