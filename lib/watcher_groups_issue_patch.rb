@@ -2,12 +2,7 @@
 module WatcherGroupsIssuePatch
 
   def self.included(base) # :nodoc:
-    base.send(:include, InstanceMethods)
-    base.class_eval do
-      alias_method_chain :notified_watchers , :groups
-      alias_method_chain :watched_by? , :groups
-      alias_method_chain :watcher_users, :users
-    end
+    base.send(:prepend, InstanceMethods)
   end
 
   Issue.class_eval do
@@ -21,8 +16,8 @@ module WatcherGroupsIssuePatch
 
     def watcher_groups
       if self.id
-        groups = Watcher.find(:all, :conditions => "watchable_type='#{self.class}' and watchable_id = #{self.id}")
-        Group.find_all_by_id(groups.map(&:user_id))
+        groups = Watcher.where("watchable_type='#{self.class}' and watchable_id = #{self.id}")
+        Group.where(id: groups.map(&:user_id))
       end
     end
 
@@ -78,7 +73,7 @@ module WatcherGroupsIssuePatch
   end
 
   module InstanceMethods
-    def notified_watchers_with_groups
+    def notified_watchers
       notified = []
 
       w = Watcher.find(:all, :conditions => "watchable_type='#{self.class}' and watchable_id = #{self.id}")
@@ -100,15 +95,15 @@ module WatcherGroupsIssuePatch
       notified.uniq
     end
 
-    def watched_by_with_groups?(user)
+    def watched_by?(user)
       watcher_groups.each do |group|
         return true if user.is_or_belongs_to?(group)
       end if self.id?
-      watched_by_without_groups?(user)
+      super(user)
     end
 
-    def watcher_users_with_users
-      users = watcher_users_without_users
+    def watcher_users
+      users = super
       watcher_groups.each do |g|
         users += g.users
       end if self.id?

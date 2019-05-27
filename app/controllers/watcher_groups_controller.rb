@@ -1,6 +1,6 @@
 class WatcherGroupsController < ApplicationController
 
-  before_filter :find_project
+  before_action :find_project
   # before_filter :require_login, :check_project_privacy, :only => [:watch, :unwatch]
   # before_filter :authorize, :only => [:new, :destroy]
 
@@ -66,7 +66,7 @@ class WatcherGroupsController < ApplicationController
   end
 
   def autocomplete_for_group
-    @groups = Group.active.like(params[:q]).find(:all, :limit => 100)
+    @groups = Group.active.like(params[:q]).all.limit(100)
     if @watched
       @groups -= @watched.watcher_groups
     end

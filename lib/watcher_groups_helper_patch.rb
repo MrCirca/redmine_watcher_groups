@@ -3,11 +3,9 @@ require_dependency 'watcher_groups_helper'
 module WatcherGroupsWatcherHelperPatch
 
     def self.included(base) # :nodoc:
-        base.send(:include, InstanceMethods)
+        base.send(:prepend, InstanceMethods)
         base.class_eval do
             # unloadable
-
-            alias_method_chain :notified_watchers , :groups
 
             Rails.logger.info 'WatcherGroupsWatcherHelperPatch monkey-patch'
         end
@@ -67,7 +65,7 @@ module WatcherGroupsWatcherHelperPatch
 
     module InstanceMethods
 
-        def notified_watchers_with_groups
+        def notified_watchers
 
             notified = []
 
@@ -83,7 +81,7 @@ module WatcherGroupsWatcherHelperPatch
                 notified += group_users
             end
 
-            notified += notified_watchers_without_groups
+            notified += super
             notified.uniq
         end
 
