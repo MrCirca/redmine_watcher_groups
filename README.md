@@ -1,6 +1,7 @@
-## Redmine Watcher Groups compatible with Redmine 3.2.0 (3.2.1) and Rails 4.2.5 (4.2.5.2)
+## Redmine Watcher Groups compatible with Redmine 4.0 and Rails 5.2.3 (backward compatibility not tested!)
 
-Plugin for Redmine that adds functionality to have Watcher Groups in additioan to Watchers.
+
+Plugin for Redmine that adds functionality to have Watcher Groups in addition to Watchers.
 
 Adds new list in the showed Issue sidebar which lists added Watcher Groups and allows to add/remove groups to that list.
 
@@ -18,7 +19,7 @@ To install the redmine watcher groups plugin, execute the following commands fro
 
 Migration is not required!
 
-## Плагин для Redmine 3.2.0 (3.2.1) and Rails 4.2.5 (4.2.5.2) - "Группы наблюдателей"
+## Плагин для Redmine 4.0 and Rails 5.2.3 - "Группы наблюдателей"
 
 Данный плагин позволяет добавлять в наблюдатели группы. Добавляет новый блок справа в задачах и позволяет добалять/удалять группы в этом списке.
 

@@ -3,14 +3,23 @@ require 'redmine'
 require_dependency 'watcher_groups/views_issues_hook'
 require_dependency 'watcher_groups_helper' 
 require_dependency 'watcher_groups_issue_hook'
+require_dependency 'watchers_list_override'
 Rails.logger.info 'Starting Watcher Groups plugin for Redmine'
  
 
 Rails.configuration.to_prepare do
 
+  unless WatchersHelper.included_modules.include?(WatchersListOverride)
+    WatchersHelper.send(:prepend, WatchersListOverride)
+	end
+	
+  unless WatcherGroupsHelper.included_modules.include?(WatchersHelper)
+    WatcherGroupsHelper.send(:include, WatchersHelper)
+	end
+	
   unless Issue.included_modules.include?(WatcherGroupsIssuePatch)
     Issue.send(:include, WatcherGroupsIssuePatch)
-  end
+	end
 
   unless IssuesController.included_modules.include?(WatcherGroupsIssuesControllerPatch)
     IssuesController.send(:include, WatcherGroupsIssuesControllerPatch)

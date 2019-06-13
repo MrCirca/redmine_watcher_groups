@@ -8,7 +8,7 @@ class WatcherGroupsController < ApplicationController
   end
 
   def create
-    if params[:watcher_group].is_a?(Hash) && request.post?
+    if params[:watcher_group].respond_to?(:key?) && request.post?
       if params[:object_type] == 'issue'
         issue = Issue.find(params[:object_id])
         group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
@@ -35,7 +35,7 @@ class WatcherGroupsController < ApplicationController
   end
 
   def append
-    if params[:watcher_group].is_a?(Hash)
+    if params[:watcher_group].respond_to?(:key?)
       group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
       @groups = Group.active.find_all_by_id(group_ids)
     end

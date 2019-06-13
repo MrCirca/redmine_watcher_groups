@@ -5,7 +5,7 @@ module WatcherGroupsIssuePatch
     base.send(:prepend, InstanceMethods)
   end
 
-  Issue.class_eval do
+	Issue.class_eval do
     include WatcherGroupsHelper
 
     scope :watched_by, lambda { |user|
@@ -46,9 +46,7 @@ module WatcherGroupsIssuePatch
 
     # Adds group as a watcher
     def add_watcher_group(group)
-      if Watcher.find(:all, 
-         :conditions => "watchable_type='#{self.class}' and watchable_id = #{self.id} and user_id = '#{group.id}'",
-         :limit => 1).blank?
+      if Watcher.where("watchable_type='#{self.class}' and watchable_id = #{self.id} and user_id = '#{group.id}'").limit(1).all.blank?
         # insert directly into table to avoid user type checking
         Watcher.connection.execute("INSERT INTO #{Watcher.table_name} (user_id, watchable_id, watchable_type) VALUES (#{group.id}, #{self.id}, '#{self.class.name}')")
       end
@@ -57,7 +55,7 @@ module WatcherGroupsIssuePatch
     # Removes user from the watchers list
     def remove_watcher_group(group)
       return nil unless group && group.is_a?(Group)
-      Watcher.delete_all "watchable_type = '#{self.class}' AND watchable_id = #{self.id} AND user_id = #{group.id}"
+      Watcher.where("watchable_type = '#{self.class}' AND watchable_id = #{self.id} AND user_id = #{group.id}").delete_all
     end
 
     # Adds/removes watcher
@@ -76,7 +74,7 @@ module WatcherGroupsIssuePatch
     def notified_watchers
       notified = []
 
-      w = Watcher.find(:all, :conditions => "watchable_type='#{self.class}' and watchable_id = #{self.id}")
+			w = Watcher.where("watchable_type='#{self.class}' and watchable_id = #{self.id}").all
       groups = Group.find_all_by_id(w.map(&:user_id))
 
       groups.each do |p|
@@ -102,11 +100,14 @@ module WatcherGroupsIssuePatch
       super(user)
     end
 
-    def watcher_users
-      users = super
-      watcher_groups.each do |g|
-        users += g.users
-      end if self.id?
+    def implicit_watcher_users
+			users = []
+			if self.id?
+	      watcher_groups.each do |g|
+	        users += g.users
+				end
+				users -= watcher_users
+			end
       users.uniq
     end
   end
