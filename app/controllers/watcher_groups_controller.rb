@@ -37,7 +37,8 @@ class WatcherGroupsController < ApplicationController
   def append
     if params[:watcher_group].respond_to?(:key?)
       group_ids = params[:watcher_group][:group_ids] || [params[:watcher_group][:group_id]]
-      @groups = Group.active.find_all_by_id(group_ids)
+      # @groups = Group.active.find_all_by_id(group_ids)
+      @groups = Group.active.where(id: group_ids)
     end
   end
 
