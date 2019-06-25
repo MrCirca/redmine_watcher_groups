@@ -3,6 +3,7 @@ module WatchersListOverride
 		remove_allowed = User.current.allowed_to?("delete_#{object.class.name.underscore}_watchers".to_sym, object.project)
 		content = ''.html_safe
 		user_in_groups = []
+		return unless object.respond_to?(:watcher_groups)
 		object.watcher_groups.collect {|group| user_in_groups += group.users }
 		lis = object.implicit_watcher_users.collect do |user|
 			s = ''.html_safe
